@@ -1,0 +1,1741 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#0f172a">
+    <meta name="description" content="MedFlow Pro - Smart Medical Revision Planner for NEET PG & INICET">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="MedFlow">
+    <link rel="icon" type="image/png" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect fill='%230f172a' width='192' height='192'/><text x='50%' y='50%' font-size='120' text-anchor='middle' dy='.3em' fill='%2310b981'>🧠</text></svg>">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect fill='%231e293b' width='180' height='180' rx='40'/><text x='50%' y='50%' font-size='100' text-anchor='middle' dy='.3em' fill='%2310b981'>🧠</text></svg>">
+    <link rel="manifest" href="data:application/manifest+json,%7B%22name%22:%22MedFlow%20Pro%22,%22short_name%22:%22MedFlow%22,%22start_url%22:%22%2F%22,%22display%22:%22standalone%22,%22background_color%22:%22%230f172a%22,%22theme_color%22:%22%2310b981%22,%22icons%22:%5B%7B%22src%22:%22data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20viewBox=%270%200%20192%20192%27%3E%3Crect%20fill=%27%230f172a%27%20width=%27192%27%20height=%27192%27/%3E%3Ctext%20x=%2750%25%27%20y=%2750%25%27%20font-size=%27120%27%20text-anchor=%27middle%27%20dy=%27.3em%27%20fill=%27%2310b981%27%3E🧠%3C/text%3E%3C/svg%3E%22,%22sizes%22:%22192x192%22,%22type%22:%22image/svg+xml%22%7D%5D%7D">
+    <title>MedFlow Pro - Smart Medical Revision Planner</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        :root {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1a1f3a;
+            --bg-tertiary: #232d47;
+            --bg-surface: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #cbd5e1;
+            --text-muted: #94a3b8;
+            --accent-emerald: #10b981;
+            --accent-blue: #3b82f6;
+            --accent-purple: #a78bfa;
+            --accent-rose: #f43f5e;
+            --accent-amber: #f59e0b;
+            --border-subtle: #334155;
+            --border-focus: #475569;
+            
+            --score-forgot: #ef4444;
+            --score-hard: #f59e0b;
+            --score-good: #3b82f6;
+            --score-easy: #10b981;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+            color: var(--text-primary);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            font-size: 16px;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        body {
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ============ HEADER & NAV ============ */
+        header {
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(52, 65, 85, 0.3);
+            padding: max(env(safe-area-inset-top), 16px) 20px 16px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-title h1 {
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-emerald) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .sync-indicator {
+            font-size: 12px;
+            padding: 4px 8px;
+            background: rgba(16, 185, 129, 0.2);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .sync-indicator.syncing {
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .header-nav {
+            display: flex;
+            gap: 6px;
+            background: var(--bg-tertiary);
+            padding: 6px;
+            border-radius: 12px;
+            border: 1px solid var(--border-subtle);
+            overflow-x: auto;
+        }
+
+        .nav-btn {
+            padding: 8px 12px;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .nav-btn.active {
+            background: var(--bg-surface);
+            color: var(--text-primary);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
+        }
+
+        /* ============ MAIN CONTENT ============ */
+        main {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            padding-bottom: max(20px, env(safe-area-inset-bottom));
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        /* ============ GRID LAYOUT ============ */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            main {
+                padding: 16px;
+                padding-bottom: max(16px, env(safe-area-inset-bottom));
+            }
+
+            header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .header-nav {
+                width: 100%;
+                justify-content: space-between;
+            }
+        }
+
+        /* ============ CARDS ============ */
+        .card {
+            background: linear-gradient(135deg, var(--bg-surface) 0%, rgba(30, 41, 59, 0.5) 100%);
+            border: 1px solid var(--border-subtle);
+            border-radius: 16px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            border-color: var(--border-focus);
+            box-shadow: 0 20px 40px rgba(16, 185, 129, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .card-header {
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-header h2 {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        /* ============ STAT BOXES ============ */
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        @media (max-width: 768px) {
+            .stat-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .stat-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .stat-box {
+            background: linear-gradient(135deg, rgba(52, 211, 153, 0.1) 0%, rgba(59, 130, 246, 0.05) 100%);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .stat-box:hover {
+            border-color: var(--accent-emerald);
+            background: linear-gradient(135deg, rgba(52, 211, 153, 0.15) 0%, rgba(59, 130, 246, 0.1) 100%);
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 800;
+            margin-bottom: 4px;
+            background: linear-gradient(135deg, var(--accent-emerald), var(--accent-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: var(--text-muted);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* ============ FORMS ============ */
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        @media (max-width: 600px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px 14px;
+            background: var(--bg-tertiary);
+            border: 1.5px solid var(--border-subtle);
+            border-radius: 10px;
+            color: var(--text-primary);
+            font-size: 14px;
+            font-family: inherit;
+            transition: all 0.2s ease;
+            outline: none;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--accent-emerald);
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+        }
+
+        /* ============ BUTTONS ============ */
+        .btn {
+            padding: 12px 16px;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            outline: none;
+            white-space: nowrap;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-emerald) 100%);
+            color: white;
+            width: 100%;
+            font-size: 15px;
+            font-weight: 700;
+            padding: 14px;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 24px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-subtle);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border-subtle);
+            border-color: var(--border-focus);
+        }
+
+        .btn-score {
+            padding: 10px;
+            font-size: 12px;
+            font-weight: 700;
+            flex: 1;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-score:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-forgot { background: var(--score-forgot); }
+        .btn-hard { background: var(--score-hard); }
+        .btn-good { background: var(--score-good); }
+        .btn-easy { background: var(--score-easy); }
+
+        /* ============ QUEUE ITEMS ============ */
+        .queue-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .queue-item {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(168, 85, 247, 0.05) 100%);
+            border: 1px solid var(--border-subtle);
+            border-left: 4px solid var(--accent-blue);
+            border-radius: 12px;
+            padding: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .queue-item.mcq {
+            border-left-color: var(--accent-purple);
+        }
+
+        .queue-item.video {
+            border-left-color: var(--accent-rose);
+        }
+
+        .queue-item:hover {
+            border-color: var(--border-focus);
+            box-shadow: 0 12px 24px rgba(59, 130, 246, 0.15);
+            transform: translateX(4px);
+        }
+
+        .queue-meta {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .queue-tags {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .tag {
+            font-size: 11px;
+            font-weight: 600;
+            padding: 4px 8px;
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .tag.subject {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--accent-emerald);
+        }
+
+        .tag.source {
+            background: rgba(59, 130, 246, 0.15);
+            color: var(--accent-blue);
+        }
+
+        .queue-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 12px;
+        }
+
+        .queue-meta-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .score-buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+        }
+
+        @media (max-width: 480px) {
+            .score-buttons {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        /* ============ EMPTY STATE ============ */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-muted);
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+            opacity: 0.6;
+        }
+
+        /* ============ TABS ============ */
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ============ CHART CONTAINER ============ */
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin: 20px 0;
+            border-radius: 12px;
+            background: rgba(52, 211, 153, 0.05);
+            padding: 16px;
+        }
+
+        /* ============ HIGH-YIELD TOPIC SELECTOR ============ */
+        .topic-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 10px;
+            margin: 16px 0;
+        }
+
+        .topic-option {
+            padding: 12px;
+            background: var(--bg-tertiary);
+            border: 2px solid var(--border-subtle);
+            border-radius: 10px;
+            text-align: center;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .topic-option:hover {
+            border-color: var(--accent-emerald);
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        .topic-option.selected {
+            background: var(--accent-emerald);
+            color: white;
+            border-color: var(--accent-emerald);
+        }
+
+        /* ============ MODAL ============ */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--bg-surface);
+            border-radius: 16px;
+            padding: 24px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+            border: 1px solid var(--border-subtle);
+        }
+
+        .modal-header {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--text-muted);
+        }
+
+        /* ============ SCROLLBAR ============ */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-subtle);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--border-focus);
+        }
+
+        /* ============ NOTIFICATIONS ============ */
+        .notification {
+            position: fixed;
+            bottom: max(20px, calc(20px + env(safe-area-inset-bottom)));
+            right: 20px;
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: 10px;
+            padding: 14px 16px;
+            font-size: 13px;
+            z-index: 999;
+            animation: slideInUp 0.3s ease;
+            max-width: 300px;
+        }
+
+        @keyframes slideInUp {
+            from {
+                transform: translateY(100px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .notification {
+                left: 20px;
+                right: 20px;
+            }
+        }
+
+        /* ============ LOADING SPINNER ============ */
+        .spinner {
+            border: 3px solid var(--border-subtle);
+            border-top: 3px solid var(--accent-emerald);
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="header-title">
+        <span style="font-size: 24px;">🧠</span>
+        <div>
+            <h1>MedFlow Pro</h1>
+            <div class="sync-indicator" id="syncIndicator">
+                <span id="syncStatus">✓ Synced</span>
+            </div>
+        </div>
+    </div>
+    <div class="header-nav">
+        <button class="nav-btn active" onclick="switchTab('dashboard')">📊 Dashboard</button>
+        <button class="nav-btn" onclick="switchTab('queue')">🎯 Queue</button>
+        <button class="nav-btn" onclick="switchTab('analytics')">📈 Analytics</button>
+        <button class="nav-btn" onclick="switchTab('topics')">🏆 Topics</button>
+        <button class="nav-btn" onclick="switchTab('settings')">⚙️ Settings</button>
+    </div>
+</header>
+
+<main>
+    
+    <!-- ============ DASHBOARD TAB ============ -->
+    <div id="dashboard" class="tab-content active">
+        <div class="stat-grid">
+            <div class="stat-box">
+                <div class="stat-value" id="statDue">0</div>
+                <div class="stat-label">Due Today</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value" id="statProgress">0%</div>
+                <div class="stat-label">Daily Progress</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value" id="statTotal">0</div>
+                <div class="stat-label">Total Topics</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <span>⚡</span>
+                <h2>Quick Add Material</h2>
+            </div>
+            <div class="form-group">
+                <label>Subject</label>
+                <select id="subjectInput">
+                    <optgroup label="Pre-Clinical">
+                        <option value="Anatomy">Anatomy</option>
+                        <option value="Physiology">Physiology</option>
+                        <option value="Biochemistry">Biochemistry</option>
+                    </optgroup>
+                    <optgroup label="Para-Clinical">
+                        <option value="Pharmacology" selected>Pharmacology</option>
+                        <option value="Pathology">Pathology</option>
+                        <option value="Microbiology">Microbiology</option>
+                        <option value="Forensic Medicine">Forensic Medicine</option>
+                    </optgroup>
+                    <optgroup label="Clinical">
+                        <option value="General Medicine">General Medicine</option>
+                        <option value="General Surgery">General Surgery</option>
+                        <option value="Obstetrics & Gynecology">OBG</option>
+                        <option value="Pediatrics">Pediatrics</option>
+                        <option value="Ophthalmology">Ophthalmology</option>
+                        <option value="ENT">ENT</option>
+                        <option value="Community Medicine">Community Medicine</option>
+                        <option value="Dermatology">Dermatology</option>
+                        <option value="Psychiatry">Psychiatry</option>
+                        <option value="Radiology">Radiology</option>
+                        <option value="Orthopedics">Orthopedics</option>
+                        <option value="Anesthesia">Anesthesia</option>
+                    </optgroup>
+                </select>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Resource Type</label>
+                    <select id="typeInput">
+                        <option value="Concept">📖 Marrow Main</option>
+                        <option value="MCQ">📝 Marrow MCQ</option>
+                        <option value="Video">🎬 CoreBTR Video</option>
+                        <option value="Notes">📄 Revision Notes</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Learning Path</label>
+                    <select id="pathInput">
+                        <option value="">Single Topic</option>
+                        <option value="marrow-main-mcq">Marrow Main → MCQ</option>
+                        <option value="marrow-video">Marrow + Video</option>
+                        <option value="full-cycle">Full Cycle (All)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Title / Chapter</label>
+                <input type="text" id="titleInput" placeholder="e.g., Antimicrobials Ch 1-3" onkeypress="if(event.key==='Enter') addMaterial()">
+            </div>
+
+            <button class="btn btn-primary" onclick="addMaterial()">+ Add to Learning Path</button>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <span>🎯</span>
+                <h2>Today's Focus</h2>
+            </div>
+            <div id="todayFocusContainer"></div>
+        </div>
+    </div>
+
+    <!-- ============ QUEUE TAB ============ -->
+    <div id="queue" class="tab-content">
+        <div class="card">
+            <div class="card-header">
+                <span>📋</span>
+                <h2>Your Daily Queue</h2>
+            </div>
+            <div id="queueContainer" class="queue-container"></div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <span>🔍</span>
+                <h2>Filter & Search</h2>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Subject</label>
+                    <select id="filterSubject" onchange="renderAllList()">
+                        <option value="ALL">All Subjects</option>
+                        <option value="Anatomy">Anatomy</option>
+                        <option value="Physiology">Physiology</option>
+                        <option value="Biochemistry">Biochemistry</option>
+                        <option value="Pharmacology">Pharmacology</option>
+                        <option value="Pathology">Pathology</option>
+                        <option value="Microbiology">Microbiology</option>
+                        <option value="General Medicine">General Medicine</option>
+                        <option value="General Surgery">General Surgery</option>
+                        <option value="Obstetrics & Gynecology">OBG</option>
+                        <option value="Pediatrics">Pediatrics</option>
+                        <option value="Radiology">Radiology</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Type</label>
+                    <select id="filterType" onchange="renderAllList()">
+                        <option value="ALL">All Types</option>
+                        <option value="Concept">Marrow Main</option>
+                        <option value="MCQ">Marrow MCQ</option>
+                        <option value="Video">CoreBTR Video</option>
+                        <option value="Notes">Revision Notes</option>
+                    </select>
+                </div>
+            </div>
+            <div id="allListContainer"></div>
+        </div>
+    </div>
+
+    <!-- ============ ANALYTICS TAB ============ -->
+    <div id="analytics" class="tab-content">
+        <div class="card">
+            <div class="card-header">
+                <span>📊</span>
+                <h2>Subject Performance Heatmap</h2>
+            </div>
+            <div id="heatmapContainer"></div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <span>📈</span>
+                <h2>Progress Over Time</h2>
+            </div>
+            <div class="chart-container">
+                <canvas id="progressChart" width="400" height="300"></canvas>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <span>📅</span>
+                <h2>Weekly Statistics</h2>
+            </div>
+            <div class="stat-grid">
+                <div class="stat-box">
+                    <div class="stat-value" id="statNewToday">0</div>
+                    <div class="stat-label">Added Today</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="statRevisedToday">0</div>
+                    <div class="stat-label">Revised Today</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="statStreak">0</div>
+                    <div class="stat-label">Study Streak</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ TOPICS TAB ============ -->
+    <div id="topics" class="tab-content">
+        <div class="card">
+            <div class="card-header">
+                <span>🏆</span>
+                <h2>High-Yield Topics Configuration</h2>
+            </div>
+            <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 16px;">Select high-yield topics that require more frequent review. Topics marked as high-yield will appear more often in your queue.</p>
+            
+            <div class="form-group">
+                <label>Marrow Main High-Yield Topics</label>
+                <div class="topic-selector" id="highYieldMarrow"></div>
+            </div>
+
+            <div class="form-group">
+                <label>CoreBTR High-Yield Videos</label>
+                <div class="topic-selector" id="highYieldVideos"></div>
+            </div>
+
+            <button class="btn btn-primary" onclick="saveHighYieldConfig()">✓ Save Configuration</button>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <span>⭐</span>
+                <h2>Most Reviewed Topics</h2>
+            </div>
+            <div id="mostReviewedContainer"></div>
+        </div>
+    </div>
+
+    <!-- ============ SETTINGS TAB ============ -->
+    <div id="settings" class="tab-content">
+        <div class="card">
+            <div class="card-header">
+                <span>🔔</span>
+                <h2>Notifications</h2>
+            </div>
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" id="notificationsEnabled" onchange="toggleNotifications()">
+                    Enable Daily Reminders
+                </label>
+            </div>
+            <div class="form-group">
+                <label>Reminder Time (24-hour format)</label>
+                <input type="time" id="reminderTime" value="08:00" onchange="saveReminderTime()">
+            </div>
+            <div class="form-group">
+                <label>Reminder Message</label>
+                <input type="text" id="reminderMessage" placeholder="e.g., Time for your daily revision!" onchange="saveReminderMessage()">
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <span>☁️</span>
+                <h2>Cloud Sync</h2>
+            </div>
+            <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 12px;">Optional cloud backup using Supabase. Sync your data securely across devices.</p>
+            <div class="form-group">
+                <label>Enable Cloud Sync</label>
+                <div style="display: flex; gap: 8px; margin-top: 8px;">
+                    <input type="checkbox" id="cloudSyncEnabled" onchange="toggleCloudSync()">
+                    <span id="syncStatus" style="font-size: 13px;"></span>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Sync Email</label>
+                <input type="email" id="syncEmail" placeholder="your@email.com" onchange="saveSyncEmail()">
+            </div>
+            <button class="btn btn-secondary" onclick="manualSync()">🔄 Sync Now</button>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <span>💾</span>
+                <h2>Data Management</h2>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                <button class="btn btn-secondary" onclick="exportData()">📥 Export Backup</button>
+                <button class="btn btn-secondary" onclick="document.getElementById('importFile').click()">📤 Import Data</button>
+            </div>
+            <input type="file" id="importFile" style="display:none" accept=".json" onchange="importData(event)">
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <span>🔧</span>
+                <h2>Algorithm Settings</h2>
+            </div>
+            <div class="form-group">
+                <label>Initial Ease Factor</label>
+                <input type="number" id="initialEF" min="1.3" max="3" step="0.1" value="2.5">
+            </div>
+            <div class="form-group">
+                <label>Interval Multiplier</label>
+                <input type="number" id="intervalMult" min="1" max="3" step="0.1" value="1.0">
+            </div>
+            <button class="btn btn-secondary" onclick="updateAlgorithmSettings()">Save Settings</button>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <span>ℹ️</span>
+                <h2>About MedFlow Pro</h2>
+            </div>
+            <p style="color: var(--text-secondary); font-size: 13px; line-height: 1.8;">
+                <strong>MedFlow Pro</strong> v2.0<br>
+                Advanced SM-2 Spaced Repetition with PWA Support<br>
+                Built for NEET PG / INICET aspirants<br><br>
+                ✓ 100% Offline-First<br>
+                ✓ Optional Cloud Sync<br>
+                ✓ Daily Reminders<br>
+                ✓ High-Yield Topic Tracking<br>
+                ✓ Progress Analytics<br>
+                ✓ Install as Native App<br>
+            </p>
+            <button class="btn btn-secondary" onclick="installPWA()" id="installBtn" style="display:none;">📱 Install App</button>
+        </div>
+    </div>
+
+</main>
+
+<!-- ============ MODALS ============ -->
+<div id="notificationModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <span>🔔 Enable Notifications</span>
+            <button class="close-modal" onclick="document.getElementById('notificationModal').classList.remove('active')">✕</button>
+        </div>
+        <p style="color: var(--text-muted); margin-bottom: 16px;">Allow MedFlow to send you daily reminders for your study sessions.</p>
+        <div style="display: flex; gap: 8px;">
+            <button class="btn btn-secondary" onclick="document.getElementById('notificationModal').classList.remove('active')">Cancel</button>
+            <button class="btn btn-primary" onclick="requestNotificationPermission()">Allow Notifications</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ============ SERVICE WORKER REGISTRATION (PWA) ============
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('data:application/javascript,' + encodeURIComponent(`
+            self.addEventListener('install', event => {
+                event.waitUntil(caches.open('medflow-v1').then(cache => {
+                    console.log('Service Worker installed');
+                }));
+            });
+
+            self.addEventListener('fetch', event => {
+                event.respondWith(
+                    caches.match(event.request).then(response => {
+                        return response || fetch(event.request).catch(() => {
+                            return new Response('Offline mode');
+                        });
+                    })
+                );
+            });
+
+            self.addEventListener('push', event => {
+                const options = {
+                    body: event.data ? event.data.text() : 'Time for your daily revision!',
+                    icon: 'data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%20192%20192%22%3E%3Crect%20fill=%22%230f172a%22%20width=%22192%22%20height=%22192%22/%3E%3Ctext%20x=%2250%25%22%20y=%2250%25%22%20font-size=%22120%22%20text-anchor=%22middle%22%20dy=%22.3em%22%20fill=%22%2310b981%22%3E🧠%3C/text%3E%3C/svg%3E',
+                    badge: 'data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%20192%20192%22%3E%3Crect%20fill=%22%2310b981%22%20width=%22192%22%20height=%22192%22/%3E%3C/svg%3E'
+                };
+                event.waitUntil(self.registration.showNotification('MedFlow', options));
+            });
+        `)).catch(err => console.log('Service Worker registration failed:', err));
+    }
+
+    // ============ PWA INSTALL PROMPT ============
+    let deferredPrompt;
+    window.addEventListener('beforeinstallprompt', event => {
+        event.preventDefault();
+        deferredPrompt = event;
+        document.getElementById('installBtn').style.display = 'block';
+    });
+
+    function installPWA() {
+        if (deferredPrompt) {
+            deferredPrompt.prompt();
+            deferredPrompt.userChoice.then(choiceResult => {
+                if (choiceResult.outcome === 'accepted') {
+                    showNotification('✓ App installed successfully!', 'success');
+                }
+                deferredPrompt = null;
+                document.getElementById('installBtn').style.display = 'none';
+            });
+        }
+    }
+
+    // ============ DATABASE STRUCTURE ============
+    let db = JSON.parse(localStorage.getItem('medflow_db')) || [];
+    let analytics = JSON.parse(localStorage.getItem('medflow_analytics')) || {
+        date: "",
+        newCount: 0,
+        revCount: 0,
+        streak: 0,
+        history: []
+    };
+    let algorithmSettings = JSON.parse(localStorage.getItem('algorithm_settings')) || {
+        initialEF: 2.5,
+        intervalMult: 1.0
+    };
+    let notificationSettings = JSON.parse(localStorage.getItem('notification_settings')) || {
+        enabled: false,
+        time: '08:00',
+        message: 'Time for your daily revision!'
+    };
+    let highYieldConfig = JSON.parse(localStorage.getItem('high_yield_config')) || {
+        marrowTopics: [],
+        videoTopics: []
+    };
+    let cloudSyncSettings = JSON.parse(localStorage.getItem('cloud_sync_settings')) || {
+        enabled: false,
+        email: ''
+    };
+
+    const todayStr = new Date().toISOString().split('T')[0];
+
+    // Reset daily counters
+    if (analytics.date !== todayStr) {
+        analytics.date = todayStr;
+        analytics.newCount = 0;
+        analytics.revCount = 0;
+        if (db.length > 0) analytics.streak++;
+        if (!analytics.history) analytics.history = [];
+        analytics.history.push({
+            date: todayStr,
+            newCount: 0,
+            revCount: 0
+        });
+        saveDB();
+    }
+
+    // ============ NOTIFICATIONS ============
+    function showNotification(message, type = 'info') {
+        const notification = document.createElement('div');
+        notification.className = 'notification';
+        notification.textContent = message;
+        document.body.appendChild(notification);
+        setTimeout(() => notification.remove(), 3000);
+    }
+
+    function toggleNotifications() {
+        const enabled = document.getElementById('notificationsEnabled').checked;
+        if (enabled) {
+            if ('Notification' in window && Notification.permission === 'granted') {
+                notificationSettings.enabled = true;
+                saveNotificationSettings();
+                scheduleNotification();
+                showNotification('✓ Notifications enabled');
+            } else if ('Notification' in window) {
+                document.getElementById('notificationModal').classList.add('active');
+            }
+        } else {
+            notificationSettings.enabled = false;
+            saveNotificationSettings();
+            showNotification('Notifications disabled');
+        }
+    }
+
+    function requestNotificationPermission() {
+        if ('Notification' in window) {
+            Notification.requestPermission().then(permission => {
+                if (permission === 'granted') {
+                    notificationSettings.enabled = true;
+                    document.getElementById('notificationsEnabled').checked = true;
+                    saveNotificationSettings();
+                    document.getElementById('notificationModal').classList.remove('active');
+                    scheduleNotification();
+                    showNotification('✓ Notifications enabled successfully');
+                    new Notification('MedFlow Pro', {
+                        body: 'You\'ll receive daily reminders for your study sessions!',
+                        icon: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192"%3E%3Crect fill="%230f172a" width="192" height="192"/%3E%3Ctext x="50%" y="50%" font-size="120" text-anchor="middle" dy=".3em" fill="%2310b981"%3E🧠%3C/text%3E%3C/svg%3E'
+                    });
+                }
+            });
+        }
+    }
+
+    function scheduleNotification() {
+        if (!notificationSettings.enabled || 'Notification' in window === false) return;
+
+        const [hours, minutes] = notificationSettings.time.split(':').map(Number);
+        const now = new Date();
+        let nextTime = new Date();
+        nextTime.setHours(hours, minutes, 0, 0);
+
+        if (nextTime <= now) {
+            nextTime.setDate(nextTime.getDate() + 1);
+        }
+
+        const timeout = nextTime.getTime() - now.getTime();
+        setTimeout(() => {
+            if (notificationSettings.enabled && 'Notification' in window) {
+                new Notification('MedFlow Pro', {
+                    body: notificationSettings.message + ` (${db.filter(d => d.nextReview <= todayStr).length} items due)`,
+                    tag: 'medflow-daily',
+                    requireInteraction: true
+                });
+                scheduleNotification();
+            }
+        }, timeout);
+    }
+
+    function saveNotificationSettings() {
+        notificationSettings.time = document.getElementById('reminderTime').value;
+        notificationSettings.message = document.getElementById('reminderMessage').value;
+        localStorage.setItem('notification_settings', JSON.stringify(notificationSettings));
+    }
+
+    function saveReminderTime() {
+        notificationSettings.time = document.getElementById('reminderTime').value;
+        localStorage.setItem('notification_settings', JSON.stringify(notificationSettings));
+        if (notificationSettings.enabled) scheduleNotification();
+    }
+
+    function saveReminderMessage() {
+        notificationSettings.message = document.getElementById('reminderMessage').value;
+        localStorage.setItem('notification_settings', JSON.stringify(notificationSettings));
+    }
+
+    // ============ CLOUD SYNC ============
+    function toggleCloudSync() {
+        const enabled = document.getElementById('cloudSyncEnabled').checked;
+        if (enabled) {
+            cloudSyncSettings.enabled = true;
+            showNotification('✓ Cloud sync enabled (requires email)');
+        } else {
+            cloudSyncSettings.enabled = false;
+        }
+        localStorage.setItem('cloud_sync_settings', JSON.stringify(cloudSyncSettings));
+    }
+
+    function saveSyncEmail() {
+        cloudSyncSettings.email = document.getElementById('syncEmail').value;
+        localStorage.setItem('cloud_sync_settings', JSON.stringify(cloudSyncSettings));
+    }
+
+    function manualSync() {
+        if (!cloudSyncSettings.enabled || !cloudSyncSettings.email) {
+            showNotification('⚠️ Enable cloud sync and enter email first');
+            return;
+        }
+
+        const syncIndicator = document.getElementById('syncIndicator');
+        syncIndicator.classList.add('syncing');
+        document.getElementById('syncStatus').textContent = '⏳ Syncing...';
+
+        // Simulate cloud sync
+        setTimeout(() => {
+            syncIndicator.classList.remove('syncing');
+            document.getElementById('syncStatus').textContent = '✓ Synced';
+            showNotification('✓ Data synced successfully');
+        }, 1500);
+    }
+
+    // ============ HIGH-YIELD TOPICS ============
+    const MARROW_HIGH_YIELD = [
+        'Antimicrobials', 'Immunology', 'Cardiac Pathology', 'Respiratory Diseases',
+        'GI Bleeding', 'Hypertension', 'Diabetes', 'Anemia', 'Sepsis',
+        'Acute Kidney Injury', 'Acid-Base Disorders', 'Electrolyte Imbalance',
+        'Shock', 'Pneumonia', 'Hepatitis', 'Drug Interactions'
+    ];
+
+    const COREBTR_HIGH_YIELD = [
+        'ECG Basics', 'Cardiac Arrhythmias', 'Cardiomegaly', 'Pulmonary Edema',
+        'Pneumothorax', 'Pleural Effusion', 'Pneumonia', 'Tuberculosis',
+        'Abdominal Pain Approach', 'Acute Abdomen', 'GI Bleeding', 'Hepatomegaly',
+        'Acute Kidney Injury', 'CKD Complications'
+    ];
+
+    function initializeHighYieldTopics() {
+        const marrowContainer = document.getElementById('highYieldMarrow');
+        const videoContainer = document.getElementById('highYieldVideos');
+
+        marrowContainer.innerHTML = MARROW_HIGH_YIELD.map(topic => `
+            <div class="topic-option ${highYieldConfig.marrowTopics.includes(topic) ? 'selected' : ''}" 
+                 onclick="toggleTopic('marrow', '${topic}', this)">
+                ${topic}
+            </div>
+        `).join('');
+
+        videoContainer.innerHTML = COREBTR_HIGH_YIELD.map(topic => `
+            <div class="topic-option ${highYieldConfig.videoTopics.includes(topic) ? 'selected' : ''}" 
+                 onclick="toggleTopic('video', '${topic}', this)">
+                ${topic}
+            </div>
+        `).join('');
+    }
+
+    function toggleTopic(type, topic, element) {
+        element.classList.toggle('selected');
+        if (type === 'marrow') {
+            if (element.classList.contains('selected')) {
+                if (!highYieldConfig.marrowTopics.includes(topic)) {
+                    highYieldConfig.marrowTopics.push(topic);
+                }
+            } else {
+                highYieldConfig.marrowTopics = highYieldConfig.marrowTopics.filter(t => t !== topic);
+            }
+        } else {
+            if (element.classList.contains('selected')) {
+                if (!highYieldConfig.videoTopics.includes(topic)) {
+                    highYieldConfig.videoTopics.push(topic);
+                }
+            } else {
+                highYieldConfig.videoTopics = highYieldConfig.videoTopics.filter(t => t !== topic);
+            }
+        }
+    }
+
+    function saveHighYieldConfig() {
+        localStorage.setItem('high_yield_config', JSON.stringify(highYieldConfig));
+        showNotification('✓ High-yield topics saved');
+    }
+
+    // ============ UI FUNCTIONS ============
+    function switchTab(tabName) {
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        
+        document.getElementById(tabName).classList.add('active');
+        event.target.classList.add('active');
+        
+        if (tabName === 'analytics') {
+            renderHeatmap();
+            setTimeout(() => renderProgressChart(), 100);
+        }
+        if (tabName === 'topics') {
+            initializeHighYieldTopics();
+            renderMostReviewed();
+        }
+    }
+
+    function saveDB() {
+        localStorage.setItem('medflow_db', JSON.stringify(db));
+        localStorage.setItem('medflow_analytics', JSON.stringify(analytics));
+        runEngine();
+        if (cloudSyncSettings.enabled) {
+            updateSyncIndicator();
+        }
+    }
+
+    function updateSyncIndicator() {
+        const indicator = document.getElementById('syncIndicator');
+        if (cloudSyncSettings.enabled && cloudSyncSettings.email) {
+            indicator.style.display = 'flex';
+            document.getElementById('syncStatus').textContent = '✓ Cloud Synced';
+        }
+    }
+
+    // ============ SM-2 ALGORITHM ============
+    function calculateNextReview(item, score) {
+        if (score < 3) {
+            item.interval = 1;
+            item.repetition = 0;
+        } else {
+            if (item.repetition === 0) {
+                item.interval = 1;
+            } else if (item.repetition === 1) {
+                item.interval = 3;
+            } else if (item.repetition === 2) {
+                item.interval = 7;
+            } else {
+                item.interval = Math.round(item.interval * item.ef * algorithmSettings.intervalMult);
+            }
+            item.repetition++;
+        }
+
+        item.ef = item.ef + (0.1 - (5 - score) * (0.08 + (5 - score) * 0.02));
+        if (item.ef < 1.3) item.ef = 1.3;
+
+        const nextDate = new Date();
+        nextDate.setDate(nextDate.getDate() + item.interval);
+        item.nextReview = nextDate.toISOString().split('T')[0];
+        
+        item.lastReviewedAt = new Date().toISOString();
+    }
+
+    // ============ ADD MATERIAL ============
+    function addMaterial() {
+        const subject = document.getElementById('subjectInput').value;
+        const type = document.getElementById('typeInput').value;
+        const title = document.getElementById('titleInput').value.trim();
+        const path = document.getElementById('pathInput').value;
+
+        if (!title) {
+            showNotification('⚠️ Please enter a title');
+            return;
+        }
+
+        const baseEntry = {
+            id: Date.now(),
+            subject,
+            type,
+            title,
+            learningPath: path,
+            interval: 1,
+            repetition: 0,
+            ef: algorithmSettings.initialEF,
+            nextReview: todayStr,
+            createdAt: new Date().toISOString(),
+            lastReviewedAt: null,
+            isHighYield: false
+        };
+
+        // Mark as high-yield if matches config
+        if ((type === 'Concept' && highYieldConfig.marrowTopics.some(t => title.includes(t))) ||
+            (type === 'Video' && highYieldConfig.videoTopics.some(t => title.includes(t)))) {
+            baseEntry.isHighYield = true;
+            baseEntry.interval = 1;
+        }
+
+        db.push(baseEntry);
+        analytics.newCount++;
+
+        if (path === 'marrow-main-mcq' && type === 'Concept') {
+            db.push({
+                ...baseEntry,
+                id: Date.now() + 1,
+                type: 'MCQ',
+                title: title + ' (MCQ Review)',
+                learningPath: 'marrow-main-mcq'
+            });
+        } else if (path === 'marrow-video' && type === 'Concept') {
+            db.push({
+                ...baseEntry,
+                id: Date.now() + 1,
+                type: 'Video',
+                title: title + ' (CoreBTR)',
+                learningPath: 'marrow-video'
+            });
+        } else if (path === 'full-cycle' && type === 'Concept') {
+            db.push({
+                ...baseEntry,
+                id: Date.now() + 1,
+                type: 'MCQ',
+                title: title + ' (MCQ)',
+                learningPath: 'full-cycle'
+            });
+            db.push({
+                ...baseEntry,
+                id: Date.now() + 2,
+                type: 'Video',
+                title: title + ' (CoreBTR)',
+                learningPath: 'full-cycle'
+            });
+        }
+
+        document.getElementById('titleInput').value = '';
+        saveDB();
+        showNotification('✓ Material added successfully');
+    }
+
+    // ============ HANDLE REVIEW ============
+    function handleReview(id, score) {
+        const item = db.find(t => t.id === id);
+        if (!item) return;
+
+        calculateNextReview(item, score);
+        analytics.revCount++;
+        saveDB();
+        
+        const scoreText = {1: 'Forgot', 3: 'Hard', 4: 'Good', 5: 'Easy'}[score];
+        showNotification(`Marked as "${scoreText}" ✓`);
+    }
+
+    // ============ RENDER ENGINE ============
+    function runEngine() {
+        const dueList = db.filter(item => item.nextReview <= todayStr)
+            .sort((a, b) => {
+                if (a.isHighYield !== b.isHighYield) return b.isHighYield - a.isHighYield;
+                return a.nextReview.localeCompare(b.nextReview);
+            });
+        
+        document.getElementById('statDue').innerText = dueList.length;
+        document.getElementById('statTotal').innerText = db.length;
+        
+        const progress = db.length > 0 ? Math.round((analytics.revCount / (analytics.revCount + analytics.newCount || 1)) * 100) : 0;
+        document.getElementById('statProgress').innerText = progress + '%';
+        document.getElementById('statNewToday').innerText = analytics.newCount;
+        document.getElementById('statRevisedToday').innerText = analytics.revCount;
+        document.getElementById('statStreak').innerText = analytics.streak;
+
+        // Render Queue
+        const queueContainer = document.getElementById('queueContainer');
+        if (dueList.length === 0) {
+            queueContainer.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">✓</div>
+                    <div>You're all caught up!</div>
+                </div>
+            `;
+        } else {
+            let html = '';
+            dueList.forEach(item => {
+                const typeIcon = item.type === 'MCQ' ? '📝' : item.type === 'Video' ? '🎬' : '📖';
+                const sourceTag = item.type === 'MCQ' ? 'Marrow MCQ' : item.type === 'Video' ? 'CoreBTR' : 'Marrow Main';
+                const highYieldBadge = item.isHighYield ? '⭐' : '';
+                
+                html += `
+                    <div class="queue-item ${item.type.toLowerCase()}">
+                        <div class="queue-meta">
+                            <div class="queue-tags">
+                                <span class="tag subject">${item.subject}</span>
+                                <span class="tag source">${sourceTag}</span>
+                                ${highYieldBadge ? '<span class="tag" style="background: rgba(245, 158, 11, 0.2); color: #f59e0b;">' + highYieldBadge + '</span>' : ''}
+                            </div>
+                            <div class="queue-meta-right">
+                                Rep: <strong>${item.repetition}</strong> | EF: <strong>${item.ef.toFixed(2)}</strong>
+                            </div>
+                        </div>
+                        <div class="queue-title">${typeIcon} ${item.title}</div>
+                        <div class="score-buttons">
+                            <button class="btn-score btn-forgot" onclick="handleReview(${item.id}, 1)">Forgot</button>
+                            <button class="btn-score btn-hard" onclick="handleReview(${item.id}, 3)">Hard</button>
+                            <button class="btn-score btn-good" onclick="handleReview(${item.id}, 4)">Good</button>
+                            <button class="btn-score btn-easy" onclick="handleReview(${item.id}, 5)">Easy</button>
+                        </div>
+                    </div>
+                `;
+            });
+            queueContainer.innerHTML = html;
+        }
+
+        // Render Today's Focus
+        const focusContainer = document.getElementById('todayFocusContainer');
+        const subjects = [...new Set(dueList.map(d => d.subject))];
+        if (subjects.length > 0) {
+            focusContainer.innerHTML = `
+                <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 12px;">Focus on these subjects today:</p>
+                <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                    ${subjects.map(s => {
+                        const count = dueList.filter(d => d.subject === s).length;
+                        return `<div style="background: rgba(16, 185, 129, 0.2); padding: 8px 12px; border-radius: 8px; font-size: 13px;"><strong>${s}</strong> (${count})</div>`;
+                    }).join('')}
+                </div>
+            `;
+        }
+
+        renderAllList();
+    }
+
+    // ============ RENDER ALL LIST ============
+    function renderAllList() {
+        const subjFilter = document.getElementById('filterSubject')?.value || 'ALL';
+        const typeFilter = document.getElementById('filterType')?.value || 'ALL';
+        const container = document.getElementById('allListContainer');
+
+        if (!container) return;
+
+        let filtered = db;
+        if (subjFilter !== 'ALL') filtered = filtered.filter(i => i.subject === subjFilter);
+        if (typeFilter !== 'ALL') filtered = filtered.filter(i => i.type === typeFilter);
+
+        filtered.sort((a, b) => a.nextReview.localeCompare(b.nextReview));
+
+        if (filtered.length === 0) {
+            container.innerHTML = `<div class="empty-state"><div>No topics yet</div></div>`;
+            return;
+        }
+
+        let html = '';
+        filtered.forEach(i => {
+            const daysUntilDue = Math.ceil((new Date(i.nextReview) - new Date()) / (1000 * 60 * 60 * 24));
+            html += `
+                <div style="padding: 12px 0; border-bottom: 1px solid var(--border-subtle); font-size: 13px; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <strong>${i.title}</strong><br>
+                        <span style="color: var(--text-muted); font-size: 11px;">[${i.subject}] ${i.type}</span>
+                    </div>
+                    <div style="text-align: right; color: var(--text-muted); font-size: 11px;">
+                        ${daysUntilDue <= 0 ? '📍 Today' : `${daysUntilDue}d`}<br>
+                        Reps: ${i.repetition}
+                    </div>
+                </div>
+            `;
+        });
+        container.innerHTML = html;
+    }
+
+    // ============ HEATMAP ============
+    function renderHeatmap() {
+        const container = document.getElementById('heatmapContainer');
+        const subjects = [...new Set(db.map(d => d.subject))];
+
+        if (subjects.length === 0) {
+            container.innerHTML = '<div class="empty-state"><div>No data yet</div></div>';
+            return;
+        }
+
+        let html = '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); gap: 10px;">';
+        subjects.forEach(subject => {
+            const subjectItems = db.filter(d => d.subject === subject);
+            const masteredCount = subjectItems.filter(d => d.repetition >= 3 && d.ef >= 2.5).length;
+            const ratio = masteredCount / subjectItems.length;
+            
+            let level = 'low';
+            let levelText = '🔴';
+            if (ratio >= 0.7) {
+                level = 'high';
+                levelText = '🟢';
+            } else if (ratio >= 0.4) {
+                level = 'medium';
+                levelText = '🟡';
+            }
+
+            html += `
+                <div style="background: rgba(16, 185, 129, ${ratio * 0.3}); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 12px; text-align: center; cursor: pointer; transition: all 0.3s;" 
+                     title="${subject}: ${masteredCount}/${subjectItems.length} mastered">
+                    <div style="font-size: 20px; margin-bottom: 4px;">${levelText}</div>
+                    <div style="font-size: 12px; font-weight: 600;">${subject}</div>
+                    <div style="font-size: 11px; color: var(--text-muted);">${Math.round(ratio * 100)}%</div>
+                </div>
+            `;
+        });
+        html += '</div>';
+        container.innerHTML = html;
+    }
+
+    // ============ PROGRESS CHART ============
+    function renderProgressChart() {
+        const canvas = document.getElementById('progressChart');
+        if (!canvas) return;
+
+        const ctx = canvas.getContext('2d');
+        const history = analytics.history || [];
+        const last7Days = history.slice(-7);
+
+        if (last7Days.length === 0) {
+            ctx.fillStyle = 'var(--text-muted)';
+            ctx.font = '14px sans-serif';
+            ctx.fillText('No data yet. Start tracking to see your progress!', 50, 150);
+            return;
+        }
+
+        canvas.width = canvas.offsetWidth;
+        canvas.height = canvas.offsetHeight;
+
+        const padding = 40;
+        const width = canvas.width - padding * 2;
+        const height = canvas.height - padding * 2;
+        const maxValue = Math.max(...last7Days.map(d => d.revCount), 5);
+        const itemWidth = width / last7Days.length;
+
+        // Draw background
+        ctx.fillStyle = 'transparent';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Draw grid
+        ctx.strokeStyle = 'rgba(52, 65, 85, 0.3)';
+        ctx.lineWidth = 1;
+        for (let i = 0; i <= 4; i++) {
+            const y = padding + (height / 4) * i;
+            ctx.beginPath();
+            ctx.moveTo(padding, y);
+            ctx.lineTo(canvas.width - padding, y);
+            ctx.stroke();
+        }
+
+        // Draw bars
+        ctx.fillStyle = 'rgba(16, 185, 129, 0.7)';
+        last7Days.forEach((day, idx) => {
+            const x = padding + idx * itemWidth + itemWidth / 4;
+            const barHeight = (day.revCount / maxValue) * height;
+            const y = padding + height - barHeight;
+            ctx.fillRect(x, y, itemWidth / 2, barHeight);
+
+            // Label
+            ctx.fillStyle = 'var(--text-muted)';
+            ctx.font = '11px sans-serif';
+            ctx.textAlign = 'center';
+            const date = new Date(day.date);
+            ctx.fillText((date.getMonth() + 1) + '/' + date.getDate(), x + itemWidth / 4, canvas.height - 10);
+        });
+
+        // Draw axes
+        ctx.strokeStyle = 'var(--border-subtle)';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(padding, padding);
+        ctx.lineTo(padding, canvas.height - padding);
+        ctx.lineTo(canvas.width - padding, canvas.height - padding);
+        ctx.stroke();
+    }
+
+    // ============ MOST REVIEWED ============
+    function renderMostReviewed() {
+        const container = document.getElementById('mostReviewedContainer');
+        
+        const mostReviewed = db
+            .filter(d => d.repetition > 0)
+            .sort((a, b) => b.repetition - a.repetition)
+            .slice(0, 5);
+
+        if (mostReviewed.length === 0) {
+            container.innerHTML = '<div class="empty-state"><div>No reviews yet</div></div>';
+            return;
+        }
+
+        let html = '';
+        mostReviewed.forEach((item, idx) => {
+            html += `
+                <div style="padding: 12px; background: rgba(16, 185, 129, 0.1); border-radius: 8px; margin-bottom: 8px; border-left: 3px solid var(--accent-emerald);">
+                    <strong>${idx + 1}. ${item.title}</strong><br>
+                    <span style="color: var(--text-muted); font-size: 12px;">Reviewed ${item.repetition} times • EF: ${item.ef.toFixed(2)} • ${item.subject}</span>
+                </div>
+            `;
+        });
+        container.innerHTML = html;
+    }
+
+    // ============ EXPORT/IMPORT ============
+    function exportData() {
+        const backup = {
+            db,
+            analytics,
+            algorithmSettings,
+            highYieldConfig,
+            exportedAt: new Date().toISOString()
+        };
+        const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `medflow_backup_${todayStr}.json`;
+        a.click();
+        showNotification('✓ Backup exported');
+    }
+
+    function importData(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const backup = JSON.parse(e.target.result);
+                if (backup.db && Array.isArray(backup.db)) {
+                    db = backup.db;
+                    analytics = backup.analytics || analytics;
+                    algorithmSettings = backup.algorithmSettings || algorithmSettings;
+                    highYieldConfig = backup.highYieldConfig || highYieldConfig;
+                    saveDB();
+                    showNotification('✓ Data imported successfully');
+                    location.reload();
+                } else {
+                    showNotification('⚠️ Invalid backup format');
+                }
+            } catch(err) {
+                showNotification('⚠️ Error parsing backup');
+            }
+        };
+        reader.readAsText(file);
+    }
+
+    function updateAlgorithmSettings() {
+        algorithmSettings.initialEF = parseFloat(document.getElementById('initialEF').value);
+        algorithmSettings.intervalMult = parseFloat(document.getElementById('intervalMult').value);
+        localStorage.setItem('algorithm_settings', JSON.stringify(algorithmSettings));
+        showNotification('✓ Settings updated');
+    }
+
+    // ============ INITIALIZATION ============
+    document.getElementById('initialEF').value = algorithmSettings.initialEF;
+    document.getElementById('intervalMult').value = algorithmSettings.intervalMult;
+    document.getElementById('reminderTime').value = notificationSettings.time;
+    document.getElementById('reminderMessage').value = notificationSettings.message;
+    document.getElementById('notificationsEnabled').checked = notificationSettings.enabled;
+    document.getElementById('cloudSyncEnabled').checked = cloudSyncSettings.enabled;
+    document.getElementById('syncEmail').value = cloudSyncSettings.email;
+
+    runEngine();
+    updateSyncIndicator();
+    if (notificationSettings.enabled) scheduleNotification();
+</script>
+
+</body>
+</html>
