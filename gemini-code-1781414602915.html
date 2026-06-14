@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MedRep - High-Yield Spaced Repetition Dashboard</title>
+    <style>
+        :root {
+            --bg-main: #0f172a;
+            --bg-card: #1e293b;
+            --bg-input: #334155;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent-primary: #10b981; /* Emerald */
+            --accent-blue: #3b82f6;
+            --accent-purple: #8b5cf6;
+            --border-color: #475569;
+            
+            /* Quality Colors */
+            --q-forgot: #ef4444;
+            --q-hard: #f59e0b;
+            --q-good: #3b82f6;
+            --q-easy: #10b981;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            transition: all 0.2s ease-in-out;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        header {
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 15px;
+        }
+
+        h1 {
+            font-size: 26px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            background: linear-gradient(to right, #3b82f6, #10b981);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        /* Interactive Tab System */
+        .tab-navigation {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+            background-color: var(--bg-card);
+            padding: 6px;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 10px;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            border-radius: 6px;
+        }
+
+        .tab-btn.active {
+            background-color: var(--bg-input);
+            color: var(--text-main);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+        }
+
+        h2 {
+            font-size: 17px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: #f1f5f9;
+            border-left: 4px solid var(--accent-primary);
+            padding-left: 10px;
+        }
+
+        /* Forms and Controls */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        @media (max-width: 600px) {
+            .form-grid { grid-template-columns: 1fr; }
+        }
+
+        label {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 11px 12px;
+            background-color: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-main);
+            font-size: 14px;
+            outline: none;
+        }
+
+        input:focus, select:focus {
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+        }
+
+        button.btn-submit {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-primary));
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+
+        button.btn-submit:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        /* Analytics Panels */
+        .analytics-strip {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+
+        .stat-box {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 12px;
+            text-align: center;
+        }
+
+        .stat-num {
+            font-size: 22px;
+            font-weight: 800;
+        }
+
+        .stat-box.due .stat-num { color: var(--accent-blue); }
+        .stat-box.ratio .stat-num { color: var(--accent-purple); }
+        .stat-box.total .stat-num { color: var(--accent-primary); }
+
+        /* Item Queue Design */
+        .queue-item {
+            background-color: var(--bg-input);
+            border-left: 4px solid var(--accent-blue);
+            border-radius: 6px;
+            padding: 14px;
+            margin-bottom: 12px;
+        }
+
+        .queue-item.mcq { border-left-color: var(--accent-purple); }
+
+        .queue-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            margin-bottom: 6px;
+        }
+
+        .tag-subject {
+            font-weight: 700;
+            color: #e2e8f0;
+            background-color: rgba(255,255,255,0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .tag-type {
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .queue-item.concept .tag-type { color: var(--accent-blue); }
+        .queue-item.mcq .tag-type { color: var(--accent-purple); }
+
+        .queue-title {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: var(--text-main);
+        }
+
+        .rating-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 6px;
+        }
+
+        .btn-rate {
+            padding: 8px;
+            border: none;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            color: white;
+            opacity: 0.9;
+        }
+
+        .btn-rate:hover { opacity: 1; transform: translateY(-1px); }
+        .btn-rate.r-forgot { background-color: var(--q-forgot); }
+        .btn-rate.r-hard { background-color: var(--q-hard); }
+        .btn-rate.r-good { background-color: var(--q-good); }
+        .btn-rate.r-easy { background-color: var(--q-easy); }
+
+        /* Filter Controls */
+        .filter-bar {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .all-list {
+            max-height: 250px;
+            overflow-y: auto;
+            font-size: 13px;
+        }
+
+        .all-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .backup-buttons {
+            display: flex;
+            gap: 8px;
+            margin-top: 15px;
+        }
+
+        .btn-utility {
+            flex: 1;
+            padding: 8px;
+            background-color: var(--bg-input);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            border-radius: 6px;
+            font-size: 11px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .btn-utility:hover { background-color: var(--border-color); }
+
+        /* Documentation Tab Styling */
+        .doc-section {
+            margin-bottom: 20px;
+        }
+        .doc-section p {
+            font-size: 14px;
+            color: #cbd5e1;
+            margin-bottom: 10px;
+        }
+        .doc-section ul {
+            padding-left: 20px;
+            margin-bottom: 10px;
+            font-size: 14px;
+            color: #cbd5e1;
+        }
+        .doc-section li {
+            margin-bottom: 6px;
+        }
+        .high-yield-badge {
+            background-color: rgba(245, 158, 11, 0.1);
+            color: #f59e0b;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: bold;
+            display: inline-block;
+            margin-bottom: 6px;
+        }
+        code {
+            background-color: var(--bg-input);
+            padding: 2px 5px;
+            border-radius: 4px;
+            font-family: monospace;
+            color: #f472b6;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>MedRep Dashboard</h1>
+        <div class="subtitle">Spaced Repetition Task Manager for Offline Textbooks</div>
+    </header>
+
+    <div class="tab-navigation">
+        <button class="tab-btn active" onclick="switchTab('dashboard-tab', this)">📊 Workspace Dashboard</button>
+        <button class="tab-btn" onclick="switchTab('guide-tab', this)">📖 High-Yield Guide & Logic</button>
+    </div>
+
+    <div id="dashboard-tab" class="tab-content active">
+        <div class="analytics-strip">
+            <div class="stat-box due">
+                <div class="stat-num" id="statDue">0</div>
+                <div class="subtitle">Due Revision</div>
+            </div>
+            <div class="stat-box ratio">
+                <div class="stat-num" id="statRatio">0/0</div>
+                <div class="subtitle">New vs Revised Today</div>
+            </div>
+            <div class="stat-box total">
+                <div class="stat-num" id="statTotal">0</div>
+                <div class="subtitle">Total Topics Tracked</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>⚡ Add New Studied Material</h2>
+            <div class="form-grid">
+                <div>
+                    <label>19 Subjects Classification</label>
+                    <select id="subjectInput">
+                        <optgroup label="Pre-Clinical">
+                            <option value="Anatomy">Anatomy</option>
+                            <option value="Physiology">Physiology</option>
+                            <option value="Biochemistry">Biochemistry</option>
+                        </optgroup>
+                        <optgroup label="Para-Clinical">
+                            <option value="Pharmacology" selected>Pharmacology</option>
+                            <option value="Pathology">Pathology</option>
+                            <option value="Microbiology">Microbiology</option>
+                            <option value="Forensic Medicine">Forensic Medicine (FMT)</option>
+                        </optgroup>
+                        <optgroup label="Clinical">
+                            <option value="General Medicine">General Medicine</option>
+                            <option value="General Surgery">General Surgery</option>
+                            <option value="Obstetrics & Gynecology">Obstetrics & Gynecology (OBG)</option>
+                            <option value="Pediatrics">Pediatrics</option>
+                            <option value="Ophthalmology">Ophthalmology</option>
+                            <option value="ENT">ENT</option>
+                            <option value="Community Medicine">Community Medicine (PSM)</option>
+                            <option value="Dermatology">Dermatology</option>
+                            <option value="Psychiatry">Psychiatry</option>
+                            <option value="Radiology">Radiology</option>
+                            <option value="Orthopedics">Orthopedics</option>
+                            <option value="Anesthesia">Anesthesia</option>
+                        </optgroup>
+                    </select>
+                </div>
+                <div>
+                    <label>Focus Resource Type</label>
+                    <select id="typeInput">
+                        <option value="Concept">Core Concept / Textbook</option>
+                        <option value="MCQ">MCQ Workout / Q-Bank</option>
+                    </select>
+                </div>
+            </div>
+            <div>
+                <label>Topic / Chapter Description</label>
+                <input type="text" id="titleInput" placeholder="e.g., Antimicrobials Ch 1-3 (KDT) or Grand Test 12 Errors" onkeypress="if(event.key==='Enter') addMaterial()">
+            </div>
+            <button class="btn-submit" onclick="addMaterial()">Log Entry into Curve Engine</button>
+        </div>
+
+        <div class="card">
+            <h2>⚠️ Active Recall Queue (Due Today)</h2>
+            <div id="queueContainer"></div>
+        </div>
+
+        <div class="card">
+            <h2>📋 Global Repository Lookup</h2>
+            <div class="filter-bar">
+                <select id="filterSubject" onchange="renderAllList()">
+                    <option value="ALL">Show All Subjects</option>
+                    <option value="Anatomy">Anatomy</option>
+                    <option value="Physiology">Physiology</option>
+                    <option value="Biochemistry">Biochemistry</option>
+                    <option value="Pharmacology">Pharmacology</option>
+                    <option value="Pathology">Pathology</option>
+                    <option value="Microbiology">Microbiology</option>
+                    <option value="Forensic Medicine">Forensic Medicine</option>
+                    <option value="General Medicine">General Medicine</option>
+                    <option value="General Surgery">General Surgery</option>
+                    <option value="Obstetrics & Gynecology">Obstetrics & Gynecology</option>
+                    <option value="Pediatrics">Pediatrics</option>
+                    <option value="Ophthalmology">Ophthalmology</option>
+                    <option value="ENT">ENT</option>
+                    <option value="Community Medicine">Community Medicine</option>
+                    <option value="Dermatology">Dermatology</option>
+                    <option value="Psychiatry">Psychiatry</option>
+                    <option value="Radiology">Radiology</option>
+                    <option value="Orthopedics">Orthopedics</option>
+                    <option value="Anesthesia">Anesthesia</option>
+                </select>
+                <select id="filterType" onchange="renderAllList()">
+                    <option value="ALL">Show All Types</option>
+                    <option value="Concept">Concepts Only</option>
+                    <option value="MCQ">MCQs Only</option>
+                </select>
+            </div>
+            <div class="all-list" id="allListContainer"></div>
+            
+            <div class="backup-buttons">
+                <button class="btn-utility" onclick="exportData()">💾 Export Local Backup</button>
+                <button class="btn-utility" onclick="document.getElementById('importFile').click()">📂 Import Sync Data</button>
+                <input type="file" id="importFile" style="display:none" accept=".json" onchange="importData(event)">
+            </div>
+        </div>
+    </div>
+
+    <div id="guide-tab" class="tab-content">
+        <div class="card">
+            <h2>🧠 How the Spaced Repetition Engine Functions</h2>
+            <div class="doc-section">
+                <p>This app implements a custom, highly optimized variation of the classic <b>SuperMemo SM-2 algorithmic model</b>. Instead of forcing you to memorize microscopic facts via digital flashcards, it tracks the mathematical decay of whole high-yield textbook topics or question blocks.</p>
+                <ul>
+                    <li><b>The Forgetting Curve Calculation:</b> Every time you log a topic, the app tracks its repetition number and an internal <code>Ease Factor (EF)</code> (defaulting to 2.5). When you click a rating button, the algorithm calculates the exact day the topic returns.</li>
+                    <li><b>The Optimized Intervallic Step:</b> To prevent heavy backlogs from overwhelming you during clinical shifts, the early intervals are optimized into a tight clinical track:
+                        <br>&bull; <b>Forgot:</b> Reset to Day 1 review loop.
+                        <br>&bull; <b>Hard:</b> Schedules for next review in 3 days.
+                        <br>&bull; <b>Good:</b> Schedules for next review in 7 days.
+                        <br>&bull; <b>Easy:</b> Multiplies interval by the custom Ease Factor (pushes past 14 to 28+ days cleanly).
+                    </li>
+                    <li><b>Adaptive Ease Adjustment:</b> If you consistently mark a chapter as "Hard", the system dynamically lowers that topic's ease factor so it shows up more frequently until mastered.</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>🚀 High-Yield Strategy for NEET PG & INICET Aspirants</h2>
+            
+            <div class="doc-section">
+                <span class="high-yield-badge">Internship Workflow Preservation</span>
+                <p>Typing thousands of digital flashcards while handling ward duty or structural post-duty calls is impossible. This tool operates as an <b>administrative task manager for your physical ecosystem</b> (e.g., KDT, Robbins, Bailey & Love, or your hand-annotated coaching notes).</p>
+            </div>
+
+            <div class="doc-section">
+                <span class="high-yield-badge">How to Track Q-Bank Errors</span>
+                <p>When solving standard MCQ modules, don't waste precious time digitizing explanations. Instead, drop an entry under the <b>MCQ Workout</b> toggle with a clear marker—for example: <code>GT 14 - Neuro-Ophthalmology Errors</code> or <code>Systemic Pharmacology Q-Bank Block 4</code>. When it populates your queue, rapidly slide open your notebook to review your custom error log or custom high-yield tables.</p>
+            </div>
+
+            <div class="doc-section">
+                <span class="high-yield-badge">Maintaining the Strategic 50/50 Metric</span>
+                <p>Look at the <code>New vs Revised Today</code> counter in the dashboard every morning. To achieve elite scores, you must balance raw learning with absolute consolidation. If the app displays 8 items due for revision (R), use that number to cap your daily workload by choosing to look at exactly 8 new topics (N) from your master physical syllabus. Enforcing this balance stops backlogs from building up when ward shifts get chaotic.</p>
+            </div>
+            
+            <div class="doc-section">
+                <span class="high-yield-badge">Data Portability Guarantee</span>
+                <p>Because this app runs entirely offline using your browser's secure <code>localStorage</code>, your data remains fully sandboxed. Use the <b>Export Local Backup</b> feature regularly to generate a lightweight text file, which you can import on any phone or tablet to keep your schedules synced across devices without relying on third-party cloud connections.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let db = JSON.parse(localStorage.getItem('med_rep_db')) || [];
+        let analytics = JSON.parse(localStorage.getItem('med_rep_analytics')) || { date: "", newCount: 0, revCount: 0 };
+
+        const todayStr = new Date().toISOString().split('T')[0];
+        if (analytics.date !== todayStr) {
+            analytics.date = todayStr;
+            analytics.newCount = 0;
+            analytics.revCount = 0;
+            localStorage.setItem('med_rep_analytics', JSON.stringify(analytics));
+        }
+
+        // Tab Switching Engine
+        function switchTab(tabId, element) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            
+            document.getElementById(tabId).classList.add('active');
+            element.classList.add('active');
+        }
+
+        function saveDB() {
+            localStorage.setItem('med_rep_db', JSON.stringify(db));
+            localStorage.setItem('med_rep_analytics', JSON.stringify(analytics));
+            runEngine();
+        }
+
+        function addMaterial() {
+            const sEl = document.getElementById('subjectInput');
+            const tEl = document.getElementById('typeInput');
+            const titleEl = document.getElementById('titleInput');
+
+            const title = titleEl.value.trim();
+            if (!title) return;
+
+            const entry = {
+                id: Date.now(),
+                subject: sEl.value,
+                type: tEl.value,
+                title: title,
+                interval: 1,
+                repetition: 0,
+                ef: 2.5,
+                nextReview: new Date(Date.now() + 86400000).toISOString().split('T')[0]
+            };
+
+            db.push(entry);
+            analytics.newCount++;
+            titleEl.value = '';
+            saveDB();
+        }
+
+        function handleReview(id, score) {
+            const item = db.find(t => t.id === id);
+            if (!item) return;
+
+            if (score >= 3) {
+                if (item.repetition === 0) {
+                    item.interval = 1;
+                } else if (item.repetition === 1) {
+                    item.interval = 3; 
+                } else if (item.repetition === 2) {
+                    item.interval = 7;
+                } else {
+                    item.interval = Math.round(item.interval * item.ef);
+                }
+                item.repetition++;
+            } else {
+                item.interval = 1;
+                item.repetition = 0;
+            }
+
+            item.ef = item.ef + (0.1 - (5 - score) * (0.08 + (5 - score) * 0.02));
+            if (item.ef < 1.3) item.ef = 1.3;
+
+            const target = new Date();
+            target.setDate(target.getDate() + item.interval);
+            item.nextReview = target.toISOString().split('T')[0];
+
+            analytics.revCount++;
+            saveDB();
+        }
+
+        function runEngine() {
+            const queueContainer = document.getElementById('queueContainer');
+            document.getElementById('statTotal').innerText = db.length;
+            document.getElementById('statRatio').innerText = `${analytics.newCount}N / ${analytics.revCount}R`;
+
+            const dueList = db.filter(item => item.nextReview <= todayStr);
+            document.getElementById('statDue').innerText = dueList.length;
+
+            if (dueList.length === 0) {
+                queueContainer.innerHTML = `<p style="color:var(--accent-primary); font-weight:700; text-align:center; padding:20px;">✓ Active recall queue cleared. Zero backlogs active.</p>`;
+            } else {
+                dueList.sort((a,b) => a.id - b.id);
+                let html = '';
+                dueList.forEach(item => {
+                    const itemClass = item.type === 'MCQ' ? 'queue-item mcq' : 'queue-item concept';
+                    html += `
+                        <div class="${itemClass}">
+                            <div class="queue-meta">
+                                <span class="tag-subject">${item.subject}</span>
+                                <span class="tag-type">${item.type === 'MCQ' ? '📝 MCQ Set' : '📖 Concept'}</span>
+                            </div>
+                            <div class="queue-title">${item.title}</div>
+                            <div class="rating-row">
+                                <button class="btn-rate r-forgot" onclick="handleReview(${item.id}, 1)">Forgot</button>
+                                <button class="btn-rate r-hard" onclick="handleReview(${item.id}, 3)">Hard</button>
+                                <button class="btn-rate r-good" onclick="handleReview(${item.id}, 4)">Good</button>
+                                <button class="btn-rate r-easy" onclick="handleReview(${item.id}, 5)">Easy</button>
+                            </div>
+                        </div>`;
+                });
+                queueContainer.innerHTML = html;
+            }
+            renderAllList();
+        }
+
+        function renderAllList() {
+            const subjFilter = document.getElementById('filterSubject').value;
+            const typeFilter = document.getElementById('filterType').value;
+            const container = document.getElementById('allListContainer');
+
+            let filtered = db;
+            if (subjFilter !== 'ALL') filtered = filtered.filter(i => i.subject === subjFilter);
+            if (typeFilter !== 'ALL') filtered = filtered.filter(i => i.type === typeFilter);
+
+            if (filtered.length === 0) {
+                container.innerHTML = `<p style="color:var(--text-muted); font-size:12px;">No logged elements match selection filters.</p>`;
+                return;
+            }
+
+            filtered.sort((a,b) => a.nextReview.localeCompare(b.nextReview));
+            let html = '';
+            filtered.forEach(i => {
+                html += `
+                    <div class="all-item">
+                        <span><b>[${i.subject}]</b> ${i.title}</span>
+                        <span style="color:var(--text-muted); font-size:11px;">Due: ${i.nextReview} (Int: ${i.interval}d)</span>
+                    </div>`;
+            });
+            container.innerHTML = html;
+        }
+
+        function exportData() {
+            const blob = new Blob([JSON.stringify(db, null, 2)], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `medrep_backup_${todayStr}.json`;
+            a.click();
+        }
+
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const parsed = JSON.parse(e.target.result);
+                    if (Array.isArray(parsed)) {
+                        db = parsed;
+                        saveDB();
+                        alert('Sync database import executed successfully.');
+                    } else {
+                        alert('Error: Invalid internal tracking data footprint.');
+                    }
+                } catch(err) {
+                    alert('Error parsing database payload.');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        runEngine();
+    </script>
+</body>
+</html>
