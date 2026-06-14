@@ -1,0 +1,1227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>MedFlow Pro - Smart Medical Revision Planner</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        :root {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1a1f3a;
+            --bg-tertiary: #232d47;
+            --bg-surface: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #cbd5e1;
+            --text-muted: #94a3b8;
+            --accent-emerald: #10b981;
+            --accent-blue: #3b82f6;
+            --accent-purple: #a78bfa;
+            --accent-rose: #f43f5e;
+            --accent-amber: #f59e0b;
+            --border-subtle: #334155;
+            --border-focus: #475569;
+            
+            /* Quality Score Colors */
+            --score-forgot: #ef4444;
+            --score-hard: #f59e0b;
+            --score-good: #3b82f6;
+            --score-easy: #10b981;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+            color: var(--text-primary);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            font-size: 16px;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        body {
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ============ HEADER & NAV ============ */
+        header {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(52, 65, 85, 0.3);
+            padding: 16px 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-title h1 {
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-emerald) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header-nav {
+            display: flex;
+            gap: 8px;
+            background: var(--bg-tertiary);
+            padding: 6px;
+            border-radius: 12px;
+            border: 1px solid var(--border-subtle);
+        }
+
+        .nav-btn {
+            padding: 8px 14px;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            white-space: nowrap;
+        }
+
+        .nav-btn.active {
+            background: var(--bg-surface);
+            color: var(--text-primary);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
+        }
+
+        .nav-btn:hover:not(.active) {
+            color: var(--text-secondary);
+        }
+
+        /* ============ MAIN CONTENT ============ */
+        main {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        /* ============ GRID LAYOUT ============ */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            main {
+                padding: 16px;
+            }
+        }
+
+        /* ============ CARDS ============ */
+        .card {
+            background: linear-gradient(135deg, var(--bg-surface) 0%, rgba(30, 41, 59, 0.5) 100%);
+            border: 1px solid var(--border-subtle);
+            border-radius: 16px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+        }
+
+        .card:hover {
+            border-color: var(--border-focus);
+            box-shadow: 0 20px 40px rgba(16, 185, 129, 0.1);
+            transform: translateY(-4px);
+        }
+
+        .card-header {
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-header h2 {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .card-icon {
+            font-size: 20px;
+        }
+
+        /* ============ STAT BOXES ============ */
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        @media (max-width: 768px) {
+            .stat-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .stat-box {
+            background: linear-gradient(135deg, rgba(52, 211, 153, 0.1) 0%, rgba(59, 130, 246, 0.05) 100%);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .stat-box:hover {
+            border-color: var(--accent-emerald);
+            background: linear-gradient(135deg, rgba(52, 211, 153, 0.15) 0%, rgba(59, 130, 246, 0.1) 100%);
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 800;
+            margin-bottom: 4px;
+            background: linear-gradient(135deg, var(--accent-emerald), var(--accent-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* ============ FORMS ============ */
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        @media (max-width: 600px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px 14px;
+            background: var(--bg-tertiary);
+            border: 1.5px solid var(--border-subtle);
+            border-radius: 10px;
+            color: var(--text-primary);
+            font-size: 14px;
+            font-family: inherit;
+            transition: all 0.2s ease;
+            outline: none;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--accent-emerald);
+            background: var(--bg-tertiary);
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+        }
+
+        /* ============ BUTTONS ============ */
+        .btn {
+            padding: 12px 16px;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            outline: none;
+            white-space: nowrap;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-emerald) 100%);
+            color: white;
+            width: 100%;
+            font-size: 15px;
+            font-weight: 700;
+            padding: 14px;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 24px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-subtle);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border-subtle);
+            border-color: var(--border-focus);
+        }
+
+        .btn-score {
+            padding: 10px;
+            font-size: 12px;
+            font-weight: 700;
+            flex: 1;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-score:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-forgot { background: var(--score-forgot); }
+        .btn-hard { background: var(--score-hard); }
+        .btn-good { background: var(--score-good); }
+        .btn-easy { background: var(--score-easy); }
+
+        /* ============ QUEUE ITEMS ============ */
+        .queue-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .queue-item {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(168, 85, 247, 0.05) 100%);
+            border: 1px solid var(--border-subtle);
+            border-left: 4px solid var(--accent-blue);
+            border-radius: 12px;
+            padding: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .queue-item.mcq {
+            border-left-color: var(--accent-purple);
+        }
+
+        .queue-item.video {
+            border-left-color: var(--accent-rose);
+        }
+
+        .queue-item:hover {
+            border-color: var(--border-focus);
+            box-shadow: 0 12px 24px rgba(59, 130, 246, 0.15);
+            transform: translateX(4px);
+        }
+
+        .queue-meta {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .queue-tags {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .tag {
+            font-size: 11px;
+            font-weight: 600;
+            padding: 4px 8px;
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .tag.subject {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--accent-emerald);
+        }
+
+        .tag.source {
+            background: rgba(59, 130, 246, 0.15);
+            color: var(--accent-blue);
+        }
+
+        .queue-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 12px;
+        }
+
+        .queue-meta-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .score-buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+        }
+
+        /* ============ EMPTY STATE ============ */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-muted);
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+            opacity: 0.6;
+        }
+
+        .empty-state-text {
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        /* ============ TABS ============ */
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ============ SCROLLBAR ============ */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-subtle);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--border-focus);
+        }
+
+        /* ============ RESPONSIVE ============ */
+        @media (max-width: 480px) {
+            header {
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .header-nav {
+                width: 100%;
+            }
+
+            .score-buttons {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            main {
+                padding: 12px;
+            }
+        }
+
+        /* ============ ANIMATIONS ============ */
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .card {
+            animation: slideUp 0.5s ease-out;
+        }
+
+        /* ============ LEARNING PATH VISUALIZATION ============ */
+        .learning-path {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(59, 130, 246, 0.08) 100%);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+
+        .path-header {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+        }
+
+        .path-items {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .path-item {
+            font-size: 12px;
+            padding: 6px 12px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-subtle);
+            border-radius: 8px;
+            color: var(--text-secondary);
+            white-space: nowrap;
+        }
+
+        /* ============ HEATMAP ============ */
+        .heatmap-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
+            gap: 8px;
+            margin: 16px 0;
+        }
+
+        .heatmap-cell {
+            aspect-ratio: 1;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 600;
+            border: 1px solid var(--border-subtle);
+            transition: all 0.3s ease;
+        }
+
+        .heatmap-cell:hover {
+            transform: scale(1.05);
+            border-color: var(--accent-emerald);
+        }
+
+        .heatmap-cell.low { background: rgba(16, 185, 129, 0.2); }
+        .heatmap-cell.medium { background: rgba(16, 185, 129, 0.5); }
+        .heatmap-cell.high { background: rgba(16, 185, 129, 0.8); }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="header-title">
+        <span style="font-size: 24px;">🧠</span>
+        <h1>MedFlow Pro</h1>
+    </div>
+    <div class="header-nav">
+        <button class="nav-btn active" onclick="switchTab('dashboard')">📊 Dashboard</button>
+        <button class="nav-btn" onclick="switchTab('planner')">📅 Smart Planner</button>
+        <button class="nav-btn" onclick="switchTab('analytics')">📈 Analytics</button>
+        <button class="nav-btn" onclick="switchTab('settings')">⚙️ Settings</button>
+    </div>
+</header>
+
+<main>
+    
+    <!-- ============ DASHBOARD TAB ============ -->
+    <div id="dashboard" class="tab-content active">
+        <div class="stat-grid">
+            <div class="stat-box">
+                <div class="stat-value" id="statDue">0</div>
+                <div class="stat-label">Due Today</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value" id="statProgress">0%</div>
+                <div class="stat-label">Daily Progress</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value" id="statTotal">0</div>
+                <div class="stat-label">Total Topics</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <span class="card-icon">⚡</span>
+                <h2>Your Daily Queue</h2>
+            </div>
+            <div id="queueContainer" class="queue-container"></div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <span class="card-icon">🎯</span>
+                <h2>Quick Add Material</h2>
+            </div>
+            <div class="form-group">
+                <label>Subject</label>
+                <select id="subjectInput">
+                    <optgroup label="Pre-Clinical">
+                        <option value="Anatomy">Anatomy</option>
+                        <option value="Physiology">Physiology</option>
+                        <option value="Biochemistry">Biochemistry</option>
+                    </optgroup>
+                    <optgroup label="Para-Clinical">
+                        <option value="Pharmacology" selected>Pharmacology</option>
+                        <option value="Pathology">Pathology</option>
+                        <option value="Microbiology">Microbiology</option>
+                        <option value="Forensic Medicine">Forensic Medicine</option>
+                    </optgroup>
+                    <optgroup label="Clinical">
+                        <option value="General Medicine">General Medicine</option>
+                        <option value="General Surgery">General Surgery</option>
+                        <option value="Obstetrics & Gynecology">OBG</option>
+                        <option value="Pediatrics">Pediatrics</option>
+                        <option value="Ophthalmology">Ophthalmology</option>
+                        <option value="ENT">ENT</option>
+                        <option value="Community Medicine">Community Medicine</option>
+                        <option value="Dermatology">Dermatology</option>
+                        <option value="Psychiatry">Psychiatry</option>
+                        <option value="Radiology">Radiology</option>
+                        <option value="Orthopedics">Orthopedics</option>
+                        <option value="Anesthesia">Anesthesia</option>
+                    </optgroup>
+                </select>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Resource Type</label>
+                    <select id="typeInput">
+                        <option value="Concept">📖 Marrow Main</option>
+                        <option value="MCQ">📝 Marrow MCQ</option>
+                        <option value="Video">🎬 CoreBTR Video</option>
+                        <option value="Notes">📄 Revision Notes</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Learning Path</label>
+                    <select id="pathInput">
+                        <option value="">Single Topic</option>
+                        <option value="marrow-main-mcq">Marrow Main → MCQ</option>
+                        <option value="marrow-video">Marrow + Video</option>
+                        <option value="full-cycle">Full Cycle (All)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Title / Chapter (e.g., "Antimicrobials Ch 1-3" or "Cardio Day 1 Error Analysis")</label>
+                <input type="text" id="titleInput" placeholder="Be specific for better tracking..." onkeypress="if(event.key==='Enter') addMaterial()">
+            </div>
+
+            <button class="btn btn-primary" onclick="addMaterial()">+ Add to Learning Path</button>
+        </div>
+    </div>
+
+    <!-- ============ SMART PLANNER TAB ============ -->
+    <div id="planner" class="tab-content">
+        <div class="card">
+            <div class="card-header">
+                <span class="card-icon">🧭</span>
+                <h2>Smart Daily Planner</h2>
+            </div>
+            <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 16px;">AI-generated study plan for today based on due items, high-yield topics, and learning paths.</p>
+            <div id="smartPlanContainer"></div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <span class="card-icon">📋</span>
+                <h2>All Tracked Topics</h2>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Filter by Subject</label>
+                    <select id="filterSubject" onchange="renderAllList()">
+                        <option value="ALL">All Subjects</option>
+                        <option value="Anatomy">Anatomy</option>
+                        <option value="Physiology">Physiology</option>
+                        <option value="Biochemistry">Biochemistry</option>
+                        <option value="Pharmacology">Pharmacology</option>
+                        <option value="Pathology">Pathology</option>
+                        <option value="Microbiology">Microbiology</option>
+                        <option value="General Medicine">General Medicine</option>
+                        <option value="General Surgery">General Surgery</option>
+                        <option value="Obstetrics & Gynecology">OBG</option>
+                        <option value="Pediatrics">Pediatrics</option>
+                        <option value="Radiology">Radiology</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Filter by Type</label>
+                    <select id="filterType" onchange="renderAllList()">
+                        <option value="ALL">All Types</option>
+                        <option value="Concept">Marrow Main</option>
+                        <option value="MCQ">Marrow MCQ</option>
+                        <option value="Video">CoreBTR Video</option>
+                        <option value="Notes">Revision Notes</option>
+                    </select>
+                </div>
+            </div>
+            <div id="allListContainer"></div>
+        </div>
+    </div>
+
+    <!-- ============ ANALYTICS TAB ============ -->
+    <div id="analytics" class="tab-content">
+        <div class="card">
+            <div class="card-header">
+                <span class="card-icon">📊</span>
+                <h2>Subject Performance Heatmap</h2>
+            </div>
+            <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 12px;">Green = mastered, Yellow = needs work, Red = not started</p>
+            <div id="heatmapContainer"></div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <span class="card-icon">📈</span>
+                <h2>Weekly Statistics</h2>
+            </div>
+            <div class="stat-grid">
+                <div class="stat-box">
+                    <div class="stat-value" id="statNewToday">0</div>
+                    <div class="stat-label">Added Today</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="statRevisedToday">0</div>
+                    <div class="stat-label">Revised Today</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="statStreak">0</div>
+                    <div class="stat-label">Study Streak</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <span class="card-icon">🎯</span>
+                <h2>High-Yield Topics</h2>
+            </div>
+            <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 12px;">Topics you've reviewed most frequently (likely high-yield)</p>
+            <div id="highYieldContainer"></div>
+        </div>
+    </div>
+
+    <!-- ============ SETTINGS TAB ============ -->
+    <div id="settings" class="tab-content">
+        <div class="card">
+            <div class="card-header">
+                <span class="card-icon">💾</span>
+                <h2>Data Management</h2>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                <button class="btn btn-secondary" onclick="exportData()">📥 Export Backup</button>
+                <button class="btn btn-secondary" onclick="document.getElementById('importFile').click()">📤 Import Data</button>
+            </div>
+            <input type="file" id="importFile" style="display:none" accept=".json" onchange="importData(event)">
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <span class="card-icon">🔧</span>
+                <h2>Algorithm Settings</h2>
+            </div>
+            <div class="form-group">
+                <label>Initial Ease Factor</label>
+                <input type="number" id="initialEF" min="1.3" max="3" step="0.1" value="2.5">
+            </div>
+            <div class="form-group">
+                <label>Interval Multiplier</label>
+                <input type="number" id="intervalMult" min="1" max="3" step="0.1" value="1.0">
+            </div>
+            <button class="btn btn-secondary" onclick="updateAlgorithmSettings()">Save Settings</button>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <span class="card-icon">🗑️</span>
+                <h2>Danger Zone</h2>
+            </div>
+            <button class="btn btn-secondary" style="background: #ef4444; color: white; border: none;" onclick="if(confirm('⚠️ This will DELETE all your data. Are you sure?')) clearAllData()">Clear All Data</button>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <span class="card-icon">ℹ️</span>
+                <h2>About</h2>
+            </div>
+            <p style="color: var(--text-secondary); font-size: 13px; line-height: 1.8;">
+                <strong>MedFlow Pro</strong> v1.0<br>
+                Advanced SM-2 Spaced Repetition with Hybrid Learning Paths<br>
+                Built for NEET PG / INICET aspirants<br><br>
+                ✓ 100% Offline<br>
+                ✓ Zero Data Collection<br>
+                ✓ Full Export Support<br>
+            </p>
+        </div>
+    </div>
+
+</main>
+
+<script>
+    // ============ DATABASE STRUCTURE ============
+    let db = JSON.parse(localStorage.getItem('medflow_db')) || [];
+    let analytics = JSON.parse(localStorage.getItem('medflow_analytics')) || {
+        date: "",
+        newCount: 0,
+        revCount: 0,
+        streak: 0
+    };
+    let algorithmSettings = JSON.parse(localStorage.getItem('algorithm_settings')) || {
+        initialEF: 2.5,
+        intervalMult: 1.0
+    };
+
+    const todayStr = new Date().toISOString().split('T')[0];
+
+    // Reset daily counters
+    if (analytics.date !== todayStr) {
+        analytics.date = todayStr;
+        analytics.newCount = 0;
+        analytics.revCount = 0;
+        if (db.length > 0) analytics.streak++;
+        saveDB();
+    }
+
+    // ============ UI FUNCTIONS ============
+    function switchTab(tabName) {
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        
+        document.getElementById(tabName).classList.add('active');
+        event.target.classList.add('active');
+        
+        if (tabName === 'analytics') renderHeatmap();
+        if (tabName === 'planner') renderSmartPlan();
+    }
+
+    function saveDB() {
+        localStorage.setItem('medflow_db', JSON.stringify(db));
+        localStorage.setItem('medflow_analytics', JSON.stringify(analytics));
+        runEngine();
+    }
+
+    // ============ SM-2 ALGORITHM ============
+    function calculateNextReview(item, score) {
+        // score: 1=forgot, 3=hard, 4=good, 5=easy
+
+        if (score < 3) {
+            item.interval = 1;
+            item.repetition = 0;
+        } else {
+            if (item.repetition === 0) {
+                item.interval = 1;
+            } else if (item.repetition === 1) {
+                item.interval = 3;
+            } else if (item.repetition === 2) {
+                item.interval = 7;
+            } else {
+                item.interval = Math.round(item.interval * item.ef * algorithmSettings.intervalMult);
+            }
+            item.repetition++;
+        }
+
+        // Update Ease Factor
+        item.ef = item.ef + (0.1 - (5 - score) * (0.08 + (5 - score) * 0.02));
+        if (item.ef < 1.3) item.ef = 1.3;
+
+        // Calculate next review date
+        const nextDate = new Date();
+        nextDate.setDate(nextDate.getDate() + item.interval);
+        item.nextReview = nextDate.toISOString().split('T')[0];
+        
+        item.lastReviewedAt = new Date().toISOString();
+    }
+
+    // ============ ADD MATERIAL ============
+    function addMaterial() {
+        const subject = document.getElementById('subjectInput').value;
+        const type = document.getElementById('typeInput').value;
+        const title = document.getElementById('titleInput').value.trim();
+        const path = document.getElementById('pathInput').value;
+
+        if (!title) {
+            alert('Please enter a title');
+            return;
+        }
+
+        const baseEntry = {
+            id: Date.now(),
+            subject,
+            type,
+            title,
+            learningPath: path,
+            interval: 1,
+            repetition: 0,
+            ef: algorithmSettings.initialEF,
+            nextReview: todayStr,
+            createdAt: new Date().toISOString(),
+            lastReviewedAt: null
+        };
+
+        db.push(baseEntry);
+        analytics.newCount++;
+
+        // If learning path, create companion entries
+        if (path === 'marrow-main-mcq' && type === 'Concept') {
+            db.push({
+                ...baseEntry,
+                id: Date.now() + 1,
+                type: 'MCQ',
+                title: title + ' (MCQ Review)',
+                learningPath: 'marrow-main-mcq'
+            });
+        } else if (path === 'marrow-video' && type === 'Concept') {
+            db.push({
+                ...baseEntry,
+                id: Date.now() + 1,
+                type: 'Video',
+                title: title + ' (CoreBTR)',
+                learningPath: 'marrow-video'
+            });
+        } else if (path === 'full-cycle' && type === 'Concept') {
+            db.push({
+                ...baseEntry,
+                id: Date.now() + 1,
+                type: 'MCQ',
+                title: title + ' (MCQ)',
+                learningPath: 'full-cycle'
+            });
+            db.push({
+                ...baseEntry,
+                id: Date.now() + 2,
+                type: 'Video',
+                title: title + ' (CoreBTR)',
+                learningPath: 'full-cycle'
+            });
+        }
+
+        document.getElementById('titleInput').value = '';
+        saveDB();
+    }
+
+    // ============ HANDLE REVIEW ============
+    function handleReview(id, score) {
+        const item = db.find(t => t.id === id);
+        if (!item) return;
+
+        calculateNextReview(item, score);
+        analytics.revCount++;
+        saveDB();
+    }
+
+    // ============ RENDER QUEUE ============
+    function runEngine() {
+        const dueList = db.filter(item => item.nextReview <= todayStr).sort((a, b) => a.nextReview.localeCompare(b.nextReview));
+        
+        document.getElementById('statDue').innerText = dueList.length;
+        document.getElementById('statTotal').innerText = db.length;
+        
+        const progress = db.length > 0 ? Math.round((analytics.revCount / (analytics.revCount + analytics.newCount || 1)) * 100) : 0;
+        document.getElementById('statProgress').innerText = progress + '%';
+        document.getElementById('statNewToday').innerText = analytics.newCount;
+        document.getElementById('statRevisedToday').innerText = analytics.revCount;
+        document.getElementById('statStreak').innerText = analytics.streak;
+
+        // Render Queue
+        const queueContainer = document.getElementById('queueContainer');
+        if (dueList.length === 0) {
+            queueContainer.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">✓</div>
+                    <div class="empty-state-text">You're all caught up! No items due today.</div>
+                </div>
+            `;
+        } else {
+            let html = '';
+            dueList.forEach(item => {
+                const typeIcon = item.type === 'MCQ' ? '📝' : item.type === 'Video' ? '🎬' : '📖';
+                const sourceTag = item.type === 'MCQ' ? 'Marrow MCQ' : item.type === 'Video' ? 'CoreBTR' : item.type === 'Notes' ? 'Notes' : 'Marrow Main';
+                
+                html += `
+                    <div class="queue-item ${item.type.toLowerCase()}">
+                        <div class="queue-meta">
+                            <div class="queue-tags">
+                                <span class="tag subject">${item.subject}</span>
+                                <span class="tag source">${sourceTag}</span>
+                            </div>
+                            <div class="queue-meta-right">
+                                Rep: <strong>${item.repetition}</strong> | EF: <strong>${item.ef.toFixed(2)}</strong>
+                            </div>
+                        </div>
+                        <div class="queue-title">${typeIcon} ${item.title}</div>
+                        <div class="score-buttons">
+                            <button class="btn-score btn-forgot" onclick="handleReview(${item.id}, 1)">Forgot</button>
+                            <button class="btn-score btn-hard" onclick="handleReview(${item.id}, 3)">Hard</button>
+                            <button class="btn-score btn-good" onclick="handleReview(${item.id}, 4)">Good</button>
+                            <button class="btn-score btn-easy" onclick="handleReview(${item.id}, 5)">Easy</button>
+                        </div>
+                    </div>
+                `;
+            });
+            queueContainer.innerHTML = html;
+        }
+
+        renderAllList();
+    }
+
+    // ============ RENDER ALL LIST ============
+    function renderAllList() {
+        const subjFilter = document.getElementById('filterSubject')?.value || 'ALL';
+        const typeFilter = document.getElementById('filterType')?.value || 'ALL';
+        const container = document.getElementById('allListContainer');
+
+        let filtered = db;
+        if (subjFilter !== 'ALL') filtered = filtered.filter(i => i.subject === subjFilter);
+        if (typeFilter !== 'ALL') filtered = filtered.filter(i => i.type === typeFilter);
+
+        filtered.sort((a, b) => a.nextReview.localeCompare(b.nextReview));
+
+        if (filtered.length === 0) {
+            container.innerHTML = `<div class="empty-state"><div class="empty-state-text">No topics match filter</div></div>`;
+            return;
+        }
+
+        let html = '';
+        filtered.forEach(i => {
+            html += `
+                <div style="padding: 12px 0; border-bottom: 1px solid var(--border-subtle); font-size: 13px; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <strong>${i.title}</strong><br>
+                        <span style="color: var(--text-muted); font-size: 11px;">[${i.subject}] ${i.type}</span>
+                    </div>
+                    <div style="text-align: right; color: var(--text-muted); font-size: 11px;">
+                        Due: ${i.nextReview}<br>
+                        Int: ${i.interval}d
+                    </div>
+                </div>
+            `;
+        });
+        container.innerHTML = html;
+    }
+
+    // ============ SMART PLANNER ============
+    function renderSmartPlan() {
+        const dueItems = db.filter(item => item.nextReview <= todayStr).sort((a, b) => a.nextReview.localeCompare(b.nextReview));
+        const container = document.getElementById('smartPlanContainer');
+
+        // Group by subject and type
+        const plan = {};
+        dueItems.forEach(item => {
+            if (!plan[item.subject]) plan[item.subject] = [];
+            plan[item.subject].push(item);
+        });
+
+        if (Object.keys(plan).length === 0) {
+            container.innerHTML = `<div class="empty-state"><div class="empty-state-text">Great! No urgent revisions today. You can add new material or review high-yield topics.</div></div>`;
+            return;
+        }
+
+        let html = '<div style="display: grid; gap: 16px;">';
+        Object.entries(plan).forEach(([subject, items]) => {
+            html += `
+                <div class="learning-path">
+                    <div class="path-header">📚 ${subject}</div>
+                    <div class="path-items">
+                        ${items.map(item => `
+                            <div class="path-item" title="${item.title}">
+                                ${item.type === 'MCQ' ? '📝' : item.type === 'Video' ? '🎬' : '📖'} ${item.title.substring(0, 30)}${item.title.length > 30 ? '...' : ''}
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        });
+        html += '</div>';
+        container.innerHTML = html;
+    }
+
+    // ============ HEATMAP ============
+    function renderHeatmap() {
+        const container = document.getElementById('heatmapContainer');
+        const subjects = [...new Set(db.map(d => d.subject))];
+
+        if (subjects.length === 0) {
+            container.innerHTML = '<div class="empty-state"><div class="empty-state-text">No data yet</div></div>';
+            return;
+        }
+
+        let html = '<div class="heatmap-grid">';
+        subjects.forEach(subject => {
+            const subjectItems = db.filter(d => d.subject === subject);
+            const masteredCount = subjectItems.filter(d => d.repetition >= 3 && d.ef >= 2.5).length;
+            const ratio = masteredCount / subjectItems.length;
+            
+            let level = 'low';
+            if (ratio >= 0.7) level = 'high';
+            else if (ratio >= 0.4) level = 'medium';
+
+            html += `<div class="heatmap-cell ${level}" title="${subject}: ${masteredCount}/${subjectItems.length}">${masteredCount}</div>`;
+        });
+        html += '</div>';
+        container.innerHTML = html;
+    }
+
+    // ============ HIGH-YIELD ============
+    function renderHighYield() {
+        const container = document.getElementById('highYieldContainer');
+        
+        const highYield = db
+            .filter(d => d.repetition >= 2)
+            .sort((a, b) => b.repetition - a.repetition)
+            .slice(0, 5);
+
+        if (highYield.length === 0) {
+            container.innerHTML = '<div class="empty-state"><div class="empty-state-text">No high-yield topics yet. Keep studying!</div></div>';
+            return;
+        }
+
+        let html = '';
+        highYield.forEach(item => {
+            html += `
+                <div style="padding: 12px; background: rgba(16, 185, 129, 0.1); border-radius: 8px; margin-bottom: 8px; border-left: 3px solid var(--accent-emerald);">
+                    <strong>${item.title}</strong><br>
+                    <span style="color: var(--text-muted); font-size: 12px;">Reviewed ${item.repetition} times • EF: ${item.ef.toFixed(2)}</span>
+                </div>
+            `;
+        });
+        container.innerHTML = html;
+    }
+
+    // ============ EXPORT/IMPORT ============
+    function exportData() {
+        const backup = {
+            db,
+            analytics,
+            algorithmSettings,
+            exportedAt: new Date().toISOString()
+        };
+        const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `medflow_backup_${todayStr}.json`;
+        a.click();
+    }
+
+    function importData(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const backup = JSON.parse(e.target.result);
+                if (backup.db && Array.isArray(backup.db)) {
+                    db = backup.db;
+                    analytics = backup.analytics || analytics;
+                    algorithmSettings = backup.algorithmSettings || algorithmSettings;
+                    saveDB();
+                    alert('✓ Data imported successfully!');
+                } else {
+                    alert('Invalid backup file format');
+                }
+            } catch(err) {
+                alert('Error parsing backup file');
+            }
+        };
+        reader.readAsText(file);
+    }
+
+    function updateAlgorithmSettings() {
+        algorithmSettings.initialEF = parseFloat(document.getElementById('initialEF').value);
+        algorithmSettings.intervalMult = parseFloat(document.getElementById('intervalMult').value);
+        localStorage.setItem('algorithm_settings', JSON.stringify(algorithmSettings));
+        alert('✓ Settings updated!');
+    }
+
+    function clearAllData() {
+        localStorage.clear();
+        db = [];
+        analytics = { date: "", newCount: 0, revCount: 0, streak: 0 };
+        location.reload();
+    }
+
+    // Initialize
+    document.getElementById('initialEF').value = algorithmSettings.initialEF;
+    document.getElementById('intervalMult').value = algorithmSettings.intervalMult;
+    runEngine();
+</script>
+
+</body>
+</html>
